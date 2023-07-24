@@ -91,6 +91,10 @@
       <f:number clazz="positive-number" min="0" step="1"/>
     </f:entry>
 
+    <f:entry title="${%Container Runtime}" field="runtime">
+      <f:textbox />
+    </f:entry>
+
     <f:entry title="${%Run container privileged}" field="privileged">
       <f:checkbox />
       <span class="warning">at your own risk</span>

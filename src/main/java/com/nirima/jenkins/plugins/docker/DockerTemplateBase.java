@@ -129,6 +129,7 @@ public class DockerTemplateBase implements Describable<DockerTemplateBase>, Seri
     public @CheckForNull Long cpuQuota;
     public @CheckForNull Integer cpuShares;
     public @CheckForNull Integer shmSize;
+    public @CheckForNull String runtime;
 
     public boolean privileged;
     public boolean tty;
@@ -510,6 +511,16 @@ public class DockerTemplateBase implements Describable<DockerTemplateBase>, Seri
         this.shmSize = shmSize;
     }
 
+    @CheckForNull
+    public String getRuntime() {
+        return trimToNull(runtime);
+    }
+
+    @DataBoundSetter
+    public void setRuntime(String runtime) {
+        this.runtime = trimToNull(runtime);
+    }
+
     public boolean isPrivileged() {
         return privileged;
     }
@@ -761,6 +772,7 @@ public class DockerTemplateBase implements Describable<DockerTemplateBase>, Seri
         hostConfig(containerConfig).withPortBindings(Iterables.toArray(getPortMappings(), PortBinding.class));
         hostConfig(containerConfig).withPublishAllPorts(bindAllPorts);
         hostConfig(containerConfig).withPrivileged(privileged);
+        hostConfig(containerConfig).withRuntime(runtime);
 
         final Map<String, String> existingLabelsOrNull = containerConfig.getLabels();
         final Map<String, String> labels;
@@ -1211,6 +1223,7 @@ public class DockerTemplateBase implements Describable<DockerTemplateBase>, Seri
         result = 31 * result + (cpuQuota != null ? cpuQuota.hashCode() : 0);
         result = 31 * result + (cpuShares != null ? cpuShares.hashCode() : 0);
         result = 31 * result + (shmSize != null ? shmSize.hashCode() : 0);
+        result = 31 * result * (runtime != null ? runtime.hashCode() : 0);
         result = 31 * result + (privileged ? 1 : 0);
         result = 31 * result + (securityOpts != null ? securityOpts.hashCode() : 0);
         result = 31 * result + (capabilitiesToAdd != null ? capabilitiesToAdd.hashCode() : 0);
@@ -1249,6 +1262,7 @@ public class DockerTemplateBase implements Describable<DockerTemplateBase>, Seri
         bldToString(sb, "cpuQuota", cpuQuota);
         bldToString(sb, "cpuShares", cpuShares);
         bldToString(sb, "shmSize", shmSize);
+        bldToString(sb, "runtime", runtime);
         bldToString(sb, "privileged", privileged);
         bldToString(sb, "tty", tty);
         bldToString(sb, "macAddress'", macAddress);
