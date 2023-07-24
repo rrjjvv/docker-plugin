@@ -1,8 +1,9 @@
 package com.nirima.jenkins.plugins.docker;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.endsWithIgnoringCase;
+import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyLong;
@@ -144,6 +145,39 @@ public class DockerTemplateBaseTest {
             verify(mockHostConfig, times(1)).withGroupAdd(Arrays.asList(expectedGroupsSet));
         } else {
             verify(mockHostConfig, never()).withGroupAdd(anyList());
+        }
+    }
+
+    @Test
+    public void fillContainerConfigGivenRuntimeThenSetsRuntime() {
+        // null/empty values result in no value being set
+        testFillContainerRuntime("null", null, true, null);
+        testFillContainerRuntime("empty", "", true, null);
+        testFillContainerRuntime("spaces", "\n\n", true, null);
+
+        // anything else, we should set things
+        testFillContainerRuntime("one", "some-runtime", true, "some-runtime");
+        testFillContainerRuntime("two", "foo\nbar", true, "foo\nbar");
+        testFillContainerRuntime("twospaced", "\nfoo\n\nbar\n\n", true, "foo\n\nbar");
+    }
+
+    private static void testFillContainerRuntime(
+            String imageName, String runtimeToSet, boolean runtimeIsExpectedToBeSet, String expectedRuntime) {
+        // Given
+        final CreateContainerCmd mockCmd = mock(CreateContainerCmd.class);
+        final HostConfig mockHostConfig = mock(HostConfig.class);
+        when(mockCmd.getHostConfig()).thenReturn(mockHostConfig);
+        final DockerTemplateBase instanceUnderTest = new DockerTemplateBase(imageName);
+        instanceUnderTest.setRuntime(runtimeToSet);
+
+        // When
+        instanceUnderTest.fillContainerConfig(mockCmd);
+
+        // Then
+        if (runtimeIsExpectedToBeSet) {
+            verify(mockHostConfig, times(1)).withRuntime(expectedRuntime);
+        } else {
+            verify(mockHostConfig, never()).withRuntime(anyString());
         }
     }
 
